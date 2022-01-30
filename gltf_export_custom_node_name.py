@@ -23,8 +23,9 @@ bl_info = {
     "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "3D View > Side Bar > Item > glTF Export Custom Node Name",
-    "description": "",
-    "warning": "",
+    "description": "glTF出力で重複した名前のオブジェクト（ノード）を出力可能にします",
+    "warning": "アニメーションやシェイプキーなどが複雑な場合は問題が起こるかもしれません（未確認）",
+    "support": "TESTING",
     "wiki_url": "",
     "tracker_url": "",
     "category": "Import-Export"
