@@ -85,9 +85,33 @@ class glTF2ExportUserExtension:
                 print("[glTF Export Custom Node Name]", blender_object.name, "->", gltf2_object.name)
 
 
+class GLTF_EXPORT_CUSTOM_NODE_NAME_PT_filebrowser_panel(bpy.types.Panel):
+
+    bl_space_type = "FILE_BROWSER"
+    bl_region_type = "TOOL_PROPS"
+    bl_label = "Use Custom Node Name"
+    bl_parent_id = "GLTF_PT_export_user_extensions"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    @classmethod
+    def poll(cls, context):
+        sfile = context.space_data
+        operator = sfile.active_operator
+        return operator.bl_idname == "EXPORT_SCENE_OT_gltf"
+
+    def draw_header(self, context):
+        scene = bpy.context.scene
+        self.layout.prop(scene, "gltf_export_custom_node_name_enabled", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        if context.scene.gltf_export_custom_node_name_enabled:
+            layout.label(text="カスタムノード名で出力されます。", icon="INFO")
+
+
 def register():
     bpy.types.Scene.gltf_export_custom_node_name_enabled = bpy.props.BoolProperty(
-            name="gltf_export_custom_node_name_enabled", default=True)
+            name="Use Custom Node Name", default=False, description="カスタムノード名出力を有効にします。\n（glTF Export Custom Node Name Addon）")
     bpy.types.Object.gltf_export_name = bpy.props.StringProperty(
             name="Name", default="",
             description="glTF出力時のオブジェクト名（ノード名）\n空のときはオブジェクト名を使用\n他と重複してもよい")
@@ -96,7 +120,25 @@ def register():
         bpy.utils.register_class(cls)
 
 
+def register_panel():
+    try:
+        bpy.utils.register_class(GLTF_EXPORT_CUSTOM_NODE_NAME_PT_filebrowser_panel)
+    except Exception:
+        pass
+
+    return unregister_panel
+
+
+def unregister_panel():
+    try:
+        bpy.utils.unregister_class(GLTF_EXPORT_CUSTOM_NODE_NAME_PT_filebrowser_panel)
+    except Exception:
+        pass
+
+
 def unregister():
+    unregister_panel()
+
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
