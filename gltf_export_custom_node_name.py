@@ -20,7 +20,7 @@
 bl_info = {
     "name": "glTF Export Custom Node Name",
     "author": "todashuta",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (2, 80, 0),
     "location": "3D View > Side Bar > Item > glTF Export Custom Node Name",
     "description": "glTF出力で重複した名前のオブジェクト（ノード）を出力可能にします",
@@ -79,10 +79,12 @@ class glTF2ExportUserExtension:
         self.enabled = bpy.context.scene.gltf_export_custom_node_name_enabled
 
     def gather_node_hook(self, gltf2_object, blender_object, export_settings):
-        if self.enabled:
-            if blender_object.gltf_export_name != "":
-                gltf2_object.name = blender_object.gltf_export_name
-                print("[glTF Export Custom Node Name]", blender_object.name, "->", gltf2_object.name)
+        if not self.enabled:
+            return  # do nothing
+        if blender_object.gltf_export_name == "":
+            return  # do nothing
+        gltf2_object.name = blender_object.gltf_export_name
+        print("[glTF Export Custom Node Name]", blender_object.name, "->", gltf2_object.name)
 
 
 class GLTF_EXPORT_CUSTOM_NODE_NAME_PT_filebrowser_panel(bpy.types.Panel):
