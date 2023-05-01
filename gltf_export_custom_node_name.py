@@ -20,8 +20,8 @@
 bl_info = {
     "name": "glTF Export Custom Node Name",
     "author": "todashuta",
-    "version": (1, 1, 1),
-    "blender": (2, 80, 0),
+    "version": (1, 1, "1-dev"),
+    "blender": (2, 93, 0),
     "location": "3D View > Side Bar > Item > glTF Export Custom Node Name",
     "description": "glTF出力で重複した名前のオブジェクト（ノード）を出力可能にします",
     "warning": "アニメーションやシェイプキーなどが複雑な場合は問題が起こるかもしれません（未確認）",
@@ -55,19 +55,89 @@ class GLTF_EXPORT_CUSTOM_NODE_NAME_PT_panel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object and active_object in context.selected_objects
+        return True
 
     def draw_header(self, context):
         layout = self.layout
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(context.active_object, "gltf_export_name")
+        if context.active_object:
+            layout.prop(context.active_object, "gltf_export_name")
+        else:
+            layout.label(icon="INFO", text="Active Object is None")
+
+
+class GLTF_EXPORT_CUSTOM_NODE_NAME_STAT_PT_panel(bpy.types.Panel):
+    bl_label = "Statistics"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Item"
+    bl_context = "objectmode"
+    bl_parent_id = "GLTF_EXPORT_CUSTOM_NODE_NAME_PT_panel"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def draw_header(self, context):
+        layout = self.layout
+
+    def draw(self, context):
+        from collections import Counter
+
+        layout = self.layout
+        objects = [ob for ob in context.visible_objects if ob.gltf_export_name != ""]
+        counter = Counter([ob.gltf_export_name for ob in objects])
+        col = layout.column(align=True)
+        for k,v in sorted(counter.items()):
+            split = col.split(align=True, factor=0.6)
+            split.label(text=f"{k}", icon="OBJECT_DATA")
+            split.label(text=f"{v}")
+            op = split.operator(GLTF_EXPORT_CUSTOM_NODE_NAME_OT_select_by_name.bl_idname, text="", icon="SELECT_SET")
+            op.name = k
+
+
+class GLTF_EXPORT_CUSTOM_NODE_NAME_OT_select_by_name(bpy.types.Operator):
+    bl_idname = "object.gltf_export_custom_node_name_select_by_name"
+    bl_label = "Select by Name"
+    bl_options = {'INTERNAL'}
+
+    name: bpy.props.StringProperty(name="Name", default="")
+
+    shift_key_down = False
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    @classmethod
+    def description(cls, context, properties) -> str:
+        desc = "\n".join([
+                f"カスタムノード名に {properties.name} が設定されたオブジェクトを選択します",
+                "Shiftを押しながらクリックで現在の選択に追加します"])
+        return desc
+
+    def invoke(self, context, event):
+        self.shift_key_down = event.shift
+        return self.execute(context)
+
+    def execute(self, context):
+        if not self.shift_key_down:
+            bpy.ops.object.select_all(action='DESELECT')
+
+        for ob in context.selectable_objects:
+            if ob.gltf_export_name == self.name:
+                ob.select_set(True)
+
+        return {"FINISHED"}
 
 
 classes = (
         GLTF_EXPORT_CUSTOM_NODE_NAME_PT_panel,
+        GLTF_EXPORT_CUSTOM_NODE_NAME_STAT_PT_panel,
+        GLTF_EXPORT_CUSTOM_NODE_NAME_OT_select_by_name,
 )
 
 
