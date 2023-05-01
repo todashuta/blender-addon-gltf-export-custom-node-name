@@ -20,7 +20,7 @@
 bl_info = {
     "name": "glTF Export Custom Node Name",
     "author": "todashuta",
-    "version": (1, 1, "1-dev"),
+    "version": (1, 2, 0),
     "blender": (2, 93, 0),
     "location": "3D View > Side Bar > Item > glTF Export Custom Node Name",
     "description": "glTF出力で重複した名前のオブジェクト（ノード）を出力可能にします",
